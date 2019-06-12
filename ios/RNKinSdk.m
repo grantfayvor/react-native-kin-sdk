@@ -1,7 +1,7 @@
 
-#import "RNReactNativeKinSdk.h"
+#import "RNKinSdk.h"
 
-@implementation RNReactNativeKinSdk
+@implementation RNKinSdk
 
 - (dispatch_queue_t)methodQueue
 {

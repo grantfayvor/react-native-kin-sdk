@@ -1,6 +1,6 @@
 
 import { NativeModules } from 'react-native';
 
-const { RNReactNativeKinSdk } = NativeModules;
+const { RNKinSdk } = NativeModules;
 
-export default RNReactNativeKinSdk;
+export default RNKinSdk;

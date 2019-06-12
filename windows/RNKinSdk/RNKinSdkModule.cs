@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 
-namespace React.Native.Kin.Sdk.RNReactNativeKinSdk
+namespace Kin.Sdk.RNKinSdk
 {
     /// <summary>
     /// A module that allows JS to share data.
     /// </summary>
-    class RNReactNativeKinSdkModule : NativeModuleBase
+    class RNKinSdkModule : NativeModuleBase
     {
         /// <summary>
-        /// Instantiates the <see cref="RNReactNativeKinSdkModule"/>.
+        /// Instantiates the <see cref="RNKinSdkModule"/>.
         /// </summary>
-        internal RNReactNativeKinSdkModule()
+        internal RNKinSdkModule()
         {
 
         }
@@ -26,7 +26,7 @@ namespace React.Native.Kin.Sdk.RNReactNativeKinSdk
         {
             get
             {
-                return "RNReactNativeKinSdk";
+                return "RNKinSdk";
             }
         }
     }

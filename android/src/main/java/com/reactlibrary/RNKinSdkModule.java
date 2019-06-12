@@ -1,4 +1,3 @@
-
 package com.reactlibrary;
 
 import android.support.annotation.NonNull;
@@ -27,7 +26,7 @@ import kin.utils.ResultCallback;
 import okhttp3.Call;
 import okhttp3.Response;
 
-public class RNReactNativeKinSdkModule extends ReactContextBaseJavaModule {
+public class RNKinSdkModule extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
 
@@ -35,14 +34,14 @@ public class RNReactNativeKinSdkModule extends ReactContextBaseJavaModule {
   private Gson gson = new Gson();
   private static final String URL_CREATE_ACCOUNT = "https://friendbot-testnet.kininfrastructure.com?addr=%s&amount=" + String.valueOf(5000);
 
-  public RNReactNativeKinSdkModule(ReactApplicationContext reactContext) {
+  public RNKinSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
   }
 
   @Override
   public String getName() {
-    return "RNReactNativeKinSdk";
+    return "RNKinSdk";
   }
 
   private Environment getEnvironment(String environment) {
