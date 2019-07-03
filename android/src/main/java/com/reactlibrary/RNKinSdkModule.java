@@ -13,8 +13,14 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import kin.backupandrestore.BackupAndRestoreManager;
+import kin.backupandrestore.BackupCallback;
+import kin.backupandrestore.RestoreCallback;
+import kin.backupandrestore.exception.BackupAndRestoreException;
 import kin.sdk.Balance;
 import kin.sdk.Environment;
 import kin.sdk.KinAccount;
@@ -35,11 +41,13 @@ public class RNKinSdkModule extends ReactContextBaseJavaModule {
 
     private KinClient kinClient;
     private Gson gson = new Gson();
-    private static final String URL_CREATE_ACCOUNT = "https://friendbot-testnet.kininfrastructure.com?addr=%s&amount=" + String.valueOf(5000);
+    private BackupAndRestoreManager backupAndRestoreManager;
+    private Constants constants = new Constants();
 
     public RNKinSdkModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
+        backupAndRestoreManager = new BackupAndRestoreManager(getCurrentActivity(), constants.REQ_CODE_BACKUP, constants.REQ_CODE_RESTORE);
     }
 
     @Override
@@ -69,6 +77,11 @@ public class RNKinSdkModule extends ReactContextBaseJavaModule {
     private KinClient getClient(String appId, String environment) {
         Environment env = getEnvironment(environment);
         kinClient = new KinClient(getReactApplicationContext(), env, appId);
+        return kinClient;
+    }
+
+    private KinClient getClient(String appId, Environment environment) {
+        kinClient = new KinClient(getReactApplicationContext(), environment, appId);
         return kinClient;
     }
 
@@ -278,6 +291,66 @@ public class RNKinSdkModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void backup(String config, Callback cb) {
+        init(config);
+//        registerBackupCallback(cb);
+        for(int i = 0; i < kinClient.getAccountCount(); i++) {
+            backupAndRestoreManager.backup(kinClient, kinClient.getAccount(i));
+        }
+        cb.invoke(null, "Kin Backup of all accounts was successful");
+    }
+
+    @ReactMethod
+    public void restore(String config, Callback cb) {
+        init(config);
+//        registerRestoreCallback(cb);
+        backupAndRestoreManager.restore(kinClient);
+        cb.invoke(null, "Kin Restore was successful");
+    }
+
+    private void registerBackupCallback(Callback cb) {
+        backupAndRestoreManager.registerBackupCallback(new BackupCallback() {
+            @Override
+            public void onSuccess() {
+                cb.invoke(null, "Kin backup Success");
+            }
+
+            @Override
+            public void onCancel() {
+                cb.invoke(new Error("Kin backup was cancelled"));
+            }
+
+            @Override
+            public void onFailure(BackupAndRestoreException e) {
+                cb.invoke(new Error(e.getMessage(), e.getCause()));
+            }
+        });
+    }
+
+    private void registerRestoreCallback(Callback cb) {
+        backupAndRestoreManager.registerRestoreCallback(new RestoreCallback() {
+            @Override
+            public void onSuccess(KinClient kinClient, KinAccount kinAccount) {
+                getClient(kinClient.getAppId(), kinClient.getEnvironment());
+                Map<String, String> result = new HashMap<>();
+                result.put("APP_ID", kinClient.getAppId());
+                result.put("PUBLIC_ADDRESS", kinAccount.getPublicAddress());
+                cb.invoke(null, gson.toJson(result));
+            }
+
+            @Override
+            public void onCancel() {
+                cb.invoke(new Error("Kin restore cancelled"));
+            }
+
+            @Override
+            public void onFailure(BackupAndRestoreException e) {
+                cb.invoke(new Error(e.getMessage(), e.getCause()));
+            }
+        });
+    }
+
+    @ReactMethod
     public void getCurrentMinimumFee(String config, Callback cb) {
         init(config);
         try {
@@ -293,7 +366,7 @@ public class RNKinSdkModule extends ReactContextBaseJavaModule {
     }
 
     private void onBoardAccount(@NonNull KinAccount account, @NonNull okhttp3.Callback cb) {
-        makeRequest(String.format(URL_CREATE_ACCOUNT, account.getPublicAddress()), cb);
+        makeRequest(String.format(constants.URL_CREATE_ACCOUNT, account.getPublicAddress()), cb);
     }
 
     private void makeRequest(@NonNull String url, @NonNull okhttp3.Callback cb) {
@@ -306,5 +379,11 @@ public class RNKinSdkModule extends ReactContextBaseJavaModule {
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build().newCall(request)
                 .enqueue(cb);
+    }
+
+    @Override
+    public void onCatalystInstanceDestroy() {
+        super.onCatalystInstanceDestroy();
+        backupAndRestoreManager.release();
     }
 }

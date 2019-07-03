@@ -40,7 +40,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.kinecosystem:kin-sdk-android:1.0.4'
+    implementation 'com.github.kinecosystem:kin-sdk-android:1.0.5'
+    implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:1.0.5'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.facebook.react:react-native:+'
 }
